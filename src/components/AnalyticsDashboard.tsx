@@ -4,7 +4,7 @@ import {
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend
 } from 'recharts';
 import { formatCurrency } from '../utils/currency';
-import { getAnalyticsSummary } from '../api/client';
+import { apiClient } from '../api/client';
 import { MerchantControls } from './MerchantControls';
 import { Sparkles, TrendingUp, ShoppingBag, PhoneCall, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 
@@ -15,13 +15,13 @@ export const AnalyticsDashboard = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        getAnalyticsSummary()
+        apiClient.get('/api/dashboard/overview')
             .then(res => {
-                setData(res);
+                setData(res.data);
                 setLoading(false);
             })
             .catch(err => {
-                console.error(err);
+                console.error("Failed to fetch analytics:", err);
                 setLoading(false);
             });
     }, []);
