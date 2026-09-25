@@ -4,6 +4,7 @@ import {
     PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend
 } from 'recharts';
 import { formatCurrency } from '../utils/currency';
+import { getAnalyticsSummary } from '../api/client';
 import { MerchantControls } from './MerchantControls';
 import { Sparkles, TrendingUp, ShoppingBag, PhoneCall, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
 
@@ -14,9 +15,9 @@ export const AnalyticsDashboard = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        axios.get('http://localhost:8000/api/dashboard/overview')
+        getAnalyticsSummary()
             .then(res => {
-                setData(res.data);
+                setData(res);
                 setLoading(false);
             })
             .catch(err => {
