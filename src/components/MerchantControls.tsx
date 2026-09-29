@@ -1,22 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sliders, Sparkles, ShieldCheck, Check, Moon } from "lucide-react";
+import { apiClient } from "../api/client";
 
-interface MerchantControlsProps {
-  initialDiscountCeiling?: number;
-  initialPersona?: "friendly" | "corporate" | "persuasive";
-  onSave?: (settings: { discountCeiling: number; persona: string }) => Promise<void>;
-}
-
-export const MerchantControls: React.FC<MerchantControlsProps> = ({
-  initialDiscountCeiling = 15,
-  initialPersona = "friendly",
-  onSave,
-}) => {
-  const [discountCeiling, setDiscountCeiling] = useState<number>(initialDiscountCeiling);
-  const [persona, setPersona] = useState<"friendly" | "corporate" | "persuasive">(initialPersona);
+export const MerchantControls: React.FC = () => {
+  const [discountCeiling, setDiscountCeiling] = useState<number>(15);
+  const [persona, setPersona] = useState<string>("friendly");
   const [isSaving, setIsSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [quietHours, setQuietHours] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    apiClient.get("/api/v1/settings")
+      .then(res => {
+        const data = res.data;
+        if (data) {
+          setDiscountCeiling(data.maxDiscount || 15);
+          setPersona(data.tone || "friendly");
+          setQuietHours(data.quietHours !== undefined ? data.quietHours : true);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to load settings", err);
+        setLoading(false);
+      });
+  }, []);
 
   const personas = [
     {
@@ -43,9 +52,11 @@ export const MerchantControls: React.FC<MerchantControlsProps> = ({
     setIsSaving(true);
     setSavedSuccess(false);
     try {
-      if (onSave) {
-        await onSave({ discountCeiling, persona, quietHours } as any);
-      }
+      await apiClient.put("/api/v1/settings", {
+        tone: persona,
+        maxDiscountMargin: discountCeiling,
+        quietHoursEnabled: quietHours
+      });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
     } catch (err) {
@@ -54,6 +65,8 @@ export const MerchantControls: React.FC<MerchantControlsProps> = ({
       setIsSaving(false);
     }
   };
+
+  if (loading) return <div className="p-4 text-zinc-500">Loading controls...</div>;
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-xl space-y-6">
