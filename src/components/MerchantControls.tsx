@@ -54,8 +54,8 @@ export const MerchantControls: React.FC = () => {
     try {
       await apiClient.put("/api/v1/settings", {
         tone: persona,
-        maxDiscountMargin: discountCeiling,
-        quietHoursEnabled: quietHours
+        maxDiscount: discountCeiling,
+        quietHours: quietHours
       });
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
